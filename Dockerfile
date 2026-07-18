@@ -1,3 +1,15 @@
+# Etapa 1: compilar CSS y JavaScript con Vite
+FROM node:22-alpine AS frontend
+
+WORKDIR /app
+
+COPY . .
+
+RUN npm ci
+RUN npm run build
+
+
+# Etapa 2: ejecutar Laravel con PHP y Apache
 FROM php:8.4-apache
 
 RUN apt-get update && apt-get install -y \
@@ -29,6 +41,9 @@ RUN composer install \
     --no-dev \
     --optimize-autoloader \
     --no-interaction
+
+# Copiar los archivos compilados por Vite
+COPY --from=frontend /app/public/build /var/www/html/public/build
 
 RUN chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
